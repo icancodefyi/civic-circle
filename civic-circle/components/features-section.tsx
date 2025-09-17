@@ -36,32 +36,37 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-24 bg-background">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 fade-in">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-tight">
-            Professional-grade Platform
+          <div className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
+            Platform Capabilities
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6 tracking-tight">
+            Professional-grade Features
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Built with enterprise standards to deliver reliable, secure, and efficient civic engagement solutions.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card
+            <div
               key={index}
-              className="group bg-card border-border hover-lift professional-shadow transition-all duration-200"
+              className="group bg-white border border-border rounded-xl p-8 hover-lift enhanced-shadow transition-all duration-200"
             >
-              <CardContent className="p-8">
-                <div className="bg-secondary p-3 rounded-lg w-fit mb-6">
-                  <feature.icon className="h-6 w-6 text-secondary-foreground" />
-                </div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl w-fit mb-6 group-hover:from-primary/15 group-hover:to-primary/10 transition-all duration-200">
+                <feature.icon className="h-6 w-6 text-primary" />
+              </div>
 
-                <h3 className="text-lg font-semibold text-card-foreground mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground leading-relaxed text-sm">{feature.description}</p>
-              </CardContent>
-            </Card>
+              <h3 className="text-xl font-semibold text-foreground mb-3">{feature.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+              
+              <div className="mt-6 pt-4 border-t border-border/50">
+                <div className="text-xs text-primary font-medium">Learn more →</div>
+              </div>
+            </div>
           ))}
         </div>
       </div>

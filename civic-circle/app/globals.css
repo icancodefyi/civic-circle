@@ -1,76 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  /* Professional color scheme for sophisticated civic platform */
-  --background: #fafafa; /* Very light neutral background */
-  --foreground: #0a0a0a; /* Deep black text */
+  /* Enhanced professional color scheme with sophisticated blues */
+  --background: #fafbfc; /* Subtle blue-tinted background */
+  --foreground: #1a1d23; /* Rich dark blue-gray text */
   --card: #ffffff; /* Pure white cards */
-  --card-foreground: #0a0a0a; /* Deep black text on cards */
+  --card-foreground: #1a1d23; /* Dark text on cards */
   --popover: #ffffff;
-  --popover-foreground: #0a0a0a;
-  --primary: #18181b; /* Charcoal black primary */
-  --primary-foreground: #fafafa; /* Light text on primary */
-  --secondary: #f4f4f5; /* Light neutral secondary */
-  --secondary-foreground: #0a0a0a; /* Dark text on secondary */
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #71717a; /* Neutral gray accent */
-  --accent-foreground: #fafafa; /* Light text on accent */
+  --popover-foreground: #1a1d23;
+  --primary: #2563eb; /* Professional blue primary */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #f1f5f9; /* Light blue-gray secondary */
+  --secondary-foreground: #334155; /* Darker blue-gray text */
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #0f172a; /* Deep navy accent */
+  --accent-foreground: #ffffff; /* White text on accent */
   --destructive: #dc2626;
-  --destructive-foreground: #fafafa;
-  --border: #e4e4e7;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
   --input: #ffffff;
-  --ring: rgba(24, 24, 27, 0.2);
-  --chart-1: #18181b; /* Charcoal */
-  --chart-2: #71717a; /* Gray */
-  --chart-3: #a1a1aa; /* Light gray */
-  --chart-4: #d4d4d8; /* Very light gray */
-  --chart-5: #52525b; /* Medium gray */
+  --ring: rgba(37, 99, 235, 0.2);
+  --chart-1: #2563eb; /* Professional blue */
+  --chart-2: #64748b; /* Blue-gray */
+  --chart-3: #94a3b8; /* Light blue-gray */
+  --chart-4: #cbd5e1; /* Very light blue-gray */
+  --chart-5: #475569; /* Medium blue-gray */
   --radius: 0.5rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #18181b;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #71717a;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: rgba(24, 24, 27, 0.2);
+  --sidebar-foreground: #1a1d23;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #0f172a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: rgba(37, 99, 235, 0.2);
   --font-geist: 'Geist';
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #0a0a0a;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #a1a1aa;
-  --accent-foreground: #0a0a0a;
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #e2e8f0;
+  --muted: #475569;
+  --muted-foreground: #94a3b8;
+  --accent: #e2e8f0;
+  --accent-foreground: #0f172a;
   --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  --border: #27272a;
-  --input: #27272a;
-  --ring: rgba(250, 250, 250, 0.2);
-  --chart-1: #fafafa;
-  --chart-2: #a1a1aa;
-  --chart-3: #71717a;
-  --chart-4: #52525b;
-  --chart-5: #27272a;
-  --sidebar: #18181b;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #fafafa;
-  --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #a1a1aa;
-  --sidebar-accent-foreground: #0a0a0a;
-  --sidebar-border: #27272a;
-  --sidebar-ring: rgba(250, 250, 250, 0.2);
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --ring: rgba(59, 130, 246, 0.2);
+  --chart-1: #3b82f6;
+  --chart-2: #94a3b8;
+  --chart-3: #64748b;
+  --chart-4: #475569;
+  --chart-5: #334155;
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e2e8f0;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #334155;
+  --sidebar-ring: rgba(59, 130, 246, 0.2);
 }
 
 /* Base styles */
@@ -84,7 +84,7 @@ body {
   color: var(--foreground);
 }
 
-/* Professional subtle effects for modern platform */
+/* Enhanced professional effects for modern platform */
 @keyframes subtle-fade-in {
   from {
     opacity: 0;
@@ -105,6 +105,15 @@ body {
   }
 }
 
+@keyframes subtle-glow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+  }
+  50% {
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+  }
+}
+
 .fade-in {
   animation: subtle-fade-in 0.6s ease-out;
 }
@@ -119,7 +128,7 @@ body {
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
 }
 
 .professional-shadow {
@@ -128,6 +137,29 @@ body {
 
 .professional-shadow-lg {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.enhanced-shadow {
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.primary-glow {
+  animation: subtle-glow 3s ease-in-out infinite;
+}
+
+.glass-subtle {
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.accent-border {
+  border-left: 4px solid var(--primary);
+}
+
+.section-divider {
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  height: 1px;
 }
 
 
