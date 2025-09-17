@@ -1,13 +1,25 @@
-import React from 'react'
+import { HeroSection } from "@/components/hero-section"
+import { HowItWorksSection } from "@/components/how-it-works-section"
+import { FeaturesSection } from "@/components/features-section"
+import { StatsSection } from "@/components/stats-section"
+import { AboutSection } from "@/components/about-section"
+import { GetInvolvedSection } from "@/components/get-involved-section"
+import { ProfessionalReportSection } from "@/components/professional-report-section"
+import { ContactSection } from "@/components/contact-section"
+import { Footer } from "@/components/footer"
 
-const page = () => {
+export default function HomePage() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Welcome to Civic Circle</h1>
-      <p className="mb-4">Your one-stop solution for community engagement.</p>
-      <a href="/reports" className="text-blue-500 hover:underline">View Reports</a>
-    </div>
+    <main className="min-h-screen">
+      <HeroSection />
+      <HowItWorksSection />
+      <FeaturesSection />
+      <StatsSection />
+      <AboutSection />
+      <GetInvolvedSection />
+      <ProfessionalReportSection />
+      <ContactSection />
+      <Footer />
+    </main>
   )
 }
-
-export default page

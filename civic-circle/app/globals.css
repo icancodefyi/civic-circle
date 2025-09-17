@@ -1,6 +1,136 @@
 @import "tailwindcss";
+
+:root {
+  /* Professional color scheme for sophisticated civic platform */
+  --background: #fafafa; /* Very light neutral background */
+  --foreground: #0a0a0a; /* Deep black text */
+  --card: #ffffff; /* Pure white cards */
+  --card-foreground: #0a0a0a; /* Deep black text on cards */
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #18181b; /* Charcoal black primary */
+  --primary-foreground: #fafafa; /* Light text on primary */
+  --secondary: #f4f4f5; /* Light neutral secondary */
+  --secondary-foreground: #0a0a0a; /* Dark text on secondary */
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #71717a; /* Neutral gray accent */
+  --accent-foreground: #fafafa; /* Light text on accent */
+  --destructive: #dc2626;
+  --destructive-foreground: #fafafa;
+  --border: #e4e4e7;
+  --input: #ffffff;
+  --ring: rgba(24, 24, 27, 0.2);
+  --chart-1: #18181b; /* Charcoal */
+  --chart-2: #71717a; /* Gray */
+  --chart-3: #a1a1aa; /* Light gray */
+  --chart-4: #d4d4d8; /* Very light gray */
+  --chart-5: #52525b; /* Medium gray */
+  --radius: 0.5rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #18181b;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #71717a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: rgba(24, 24, 27, 0.2);
+  --font-geist: 'Geist';
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #a1a1aa;
+  --accent-foreground: #0a0a0a;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: rgba(250, 250, 250, 0.2);
+  --chart-1: #fafafa;
+  --chart-2: #a1a1aa;
+  --chart-3: #71717a;
+  --chart-4: #52525b;
+  --chart-5: #27272a;
+  --sidebar: #18181b;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #a1a1aa;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #27272a;
+  --sidebar-ring: rgba(250, 250, 250, 0.2);
+}
+
+/* Base styles */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  border-color: var(--border);
+  outline-color: rgb(var(--ring) / 0.5);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Professional subtle effects for modern platform */
+@keyframes subtle-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gentle-scale {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.fade-in {
+  animation: subtle-fade-in 0.6s ease-out;
+}
+
+.scale-in {
+  animation: gentle-scale 0.3s ease-out;
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.professional-shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.professional-shadow-lg {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+
+*{
+  font-family: var(--font-geist);
 }
