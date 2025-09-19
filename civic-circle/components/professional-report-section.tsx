@@ -185,7 +185,7 @@ export function ProfessionalReportSection() {
                         <label className="block text-sm font-medium text-card-foreground mb-2">Category *</label>
                         <Select
                           value={formData.category}
-                          onValueChange={(value) => setFormData({ ...formData, category: value })}
+                          onValueChange={(value: any) => setFormData({ ...formData, category: value })}
                         >
                           <SelectTrigger className="bg-input border-border">
                             <SelectValue placeholder="Select category" />
