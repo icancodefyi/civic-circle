@@ -40,7 +40,8 @@ public class ReportService {
         report.setAddress(request.getAddress());
         report.setCreatedBy(request.getCreatedBy());
         report.setPriority(request.getPriority());
-        report.setStatus(ReportStatus.PENDING);
+    report.setStatus(ReportStatus.PENDING);
+    report.setImage(request.getImage());
         
         Report savedReport = reportRepository.save(report);
         return mapToResponse(savedReport);
@@ -172,7 +173,8 @@ public class ReportService {
         response.setCreatedAt(report.getCreatedAt());
         response.setUpdatedAt(report.getUpdatedAt());
         response.setCreatedBy(report.getCreatedBy());
-        response.setPriority(report.getPriority());
+    response.setPriority(report.getPriority());
+    response.setImage(report.getImage());
         return response;
     }
 }

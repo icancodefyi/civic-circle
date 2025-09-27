@@ -24,6 +24,7 @@ public class CreateReportRequest {
     private String address;
     private String createdBy;
     private ReportPriority priority = ReportPriority.MEDIUM;
+    private String image;
     
     // Constructors
     public CreateReportRequest() {}
@@ -38,6 +39,12 @@ public class CreateReportRequest {
     }
     
     // Getters and Setters
+    public String getImage() {
+        return image;
+    }
+    public void setImage(String image) {
+        this.image = image;
+    }
     public String getTitle() {
         return title;
     }

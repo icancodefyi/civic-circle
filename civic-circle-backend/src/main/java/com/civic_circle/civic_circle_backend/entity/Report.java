@@ -67,18 +67,28 @@ public class Report {
     @Enumerated(EnumType.STRING)
     private ReportPriority priority = ReportPriority.MEDIUM;
     
+    @Column(name = "image", columnDefinition = "LONGTEXT")
+    private String image;
+
     // Constructors
     public Report() {}
-    
-    public Report(String title, String description, String category, Double latitude, Double longitude) {
+
+    public Report(String title, String description, String category, Double latitude, Double longitude, String image) {
         this.title = title;
         this.description = description;
         this.category = category;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.image = image;
     }
     
     // Getters and Setters
+    public String getImage() {
+        return image;
+    }
+    public void setImage(String image) {
+        this.image = image;
+    }
     public Long getId() {
         return id;
     }

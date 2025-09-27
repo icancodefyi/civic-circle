@@ -13,6 +13,7 @@ type FormData = {
   createdBy: string;
   latitude: number | null;
   longitude: number | null;
+  image?: string | null;
 };
 
 type FormErrors = {
@@ -50,6 +51,7 @@ export default function NewReportPage() {
     createdBy: "",
     latitude: null,
     longitude: null,
+    image: null,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -113,6 +115,55 @@ export default function NewReportPage() {
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
+  };
+
+  // Handle image upload/capture with compression
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Check file size (limit to 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image size must be less than 10MB. Please choose a smaller image or use camera compression.');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const img = new Image();
+      img.onload = () => {
+        // Create canvas to compress image if needed
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set maximum dimensions
+        const maxWidth = 1200;
+        const maxHeight = 1200;
+        let { width, height } = img;
+        
+        // Calculate new dimensions
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          } else {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress image
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        
+        setFormData(prev => ({ ...prev, image: compressedBase64 }));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleLocationClick = async () => {
@@ -303,6 +354,128 @@ export default function NewReportPage() {
               <p className="text-xs text-gray-500">
                 {formData.description.length}/2000 characters
               </p>
+            </div>
+
+            {/* Image Upload/Capture */}
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Attach Photo (optional)
+              </label>
+              
+              <div className="space-y-3">
+                {/* Camera Capture Button */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="relative cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleImageChange}
+                      className="sr-only"
+                    />
+                    <div className="flex items-center justify-center px-4 py-3 border-2 border-dashed border-blue-300 rounded-xl bg-blue-50 hover:bg-blue-100 transition-all duration-200 hover:border-blue-400">
+                      <div className="text-center">
+                        <svg className="mx-auto h-8 w-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-sm font-medium text-blue-600">Take Photo</span>
+                        <p className="text-xs text-blue-500 mt-1">Use Camera</p>
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* File Upload Button */}
+                  <label className="relative cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="sr-only"
+                    />
+                    <div className="flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-200 hover:border-gray-400">
+                      <div className="text-center">
+                        <svg className="mx-auto h-8 w-8 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span className="text-sm font-medium text-gray-600">Choose File</span>
+                        <p className="text-xs text-gray-500 mt-1">From Gallery</p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Multiple Camera Options for Mobile */}
+                <div className="sm:hidden">
+                  <p className="text-xs text-gray-600 mb-2">Camera Options:</p>
+                  <div className="flex gap-2">
+                    <label className="flex-1 cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="user"
+                        onChange={handleImageChange}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center justify-center py-2 px-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-all duration-200">
+                        <span className="text-xs font-medium text-green-700">📱 Front Camera</span>
+                      </div>
+                    </label>
+                    
+                    <label className="flex-1 cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleImageChange}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center justify-center py-2 px-3 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-all duration-200">
+                        <span className="text-xs font-medium text-purple-700">📷 Back Camera</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Image Preview */}
+              {formData.image && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Photo Attached
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, image: null }))}
+                      className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                  <img 
+                    src={formData.image} 
+                    alt="Report preview" 
+                    className="rounded-lg border border-gray-200 max-h-64 w-full object-cover shadow-sm"
+                  />
+                </div>
+              )}
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs text-blue-700 flex items-start gap-2">
+                  <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>
+                    <strong>📱 Mobile Tips:</strong> Use "Take Photo" to capture directly with your camera, or "Choose File" to select from your gallery. Photos are automatically compressed to ensure fast upload. The image helps authorities better understand and prioritize your report.
+                  </span>
+                </p>
+              </div>
             </div>
 
             {/* Category and Priority */}

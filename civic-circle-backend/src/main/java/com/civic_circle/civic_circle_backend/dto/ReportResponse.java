@@ -19,11 +19,18 @@ public class ReportResponse {
     private LocalDateTime updatedAt;
     private String createdBy;
     private ReportPriority priority;
+    private String image;
     
     // Constructors
     public ReportResponse() {}
     
     // Getters and Setters
+    public String getImage() {
+        return image;
+    }
+    public void setImage(String image) {
+        this.image = image;
+    }
     public Long getId() {
         return id;
     }
