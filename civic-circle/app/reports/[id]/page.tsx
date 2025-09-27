@@ -38,8 +38,6 @@ export default function ReportDetailsPage({ params }: { params: { id: string } }
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [newStatus, setNewStatus] = useState("");
 
   const router = useRouter();
 
@@ -57,7 +55,6 @@ useEffect(() => {
       if (response.ok) {
         const data = await response.json();
         setReport(data);
-        setNewStatus(data.status);
       } else if (response.status === 404) {
         setError("Report not found");
       } else {
@@ -67,33 +64,6 @@ useEffect(() => {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleStatusUpdate = async () => {
-    if (!report || newStatus === report.status) return;
-
-    setIsUpdatingStatus(true);
-    try {
-      const response = await fetch(`http://localhost:8080/api/reports/${report.id}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (response.ok) {
-        const updatedReport = await response.json();
-        setReport(updatedReport);
-      } else {
-        alert("Failed to update status");
-        setNewStatus(report.status); // Reset to original status
-      }
-    } catch (error) {
-      console.error("Error updating status:", error);
-      alert("Network error. Please try again.");
-      setNewStatus(report.status); // Reset to original status
-    } finally {
-      setIsUpdatingStatus(false);
     }
   };
 
@@ -192,6 +162,30 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center gap-8">
+              <Link href="/" className="text-2xl font-bold text-blue-600">
+                CivicCircle
+              </Link>
+              <nav className="hidden md:flex items-center gap-6">
+                <Link href="/reports" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  All Reports
+                </Link>
+                <Link href="/reports/new" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Submit Report
+                </Link>
+                <Link href="/admin" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Admin Panel
+                </Link>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </header>
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -313,55 +307,6 @@ useEffect(() => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Status Management */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
-                Manage Status
-              </h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-                    Current Status
-                  </label>
-                  <select
-                    id="status"
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                      {statusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  {newStatus !== report.status && (
-                    <button
-                      onClick={handleStatusUpdate}
-                      disabled={isUpdatingStatus}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                    >
-                      {isUpdatingStatus ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
-                          Updating...
-                        </span>
-                      ) : (
-                        "Update Status"
-                      )}
-                    </button>
-                  )}
-              </div>
-            </div>
-
             {/* Report Metadata */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">

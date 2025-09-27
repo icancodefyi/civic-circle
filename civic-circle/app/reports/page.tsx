@@ -159,7 +159,31 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Modern Header */}
+      {/* Navigation Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center gap-8">
+              <Link href="/" className="text-2xl font-bold text-blue-600">
+                CivicCircle
+              </Link>
+              <nav className="hidden md:flex items-center gap-6">
+                <Link href="/reports" className="text-blue-600 font-medium">
+                  All Reports
+                </Link>
+                <Link href="/reports/new" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Submit Report
+                </Link>
+                <Link href="/admin" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Admin Panel
+                </Link>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Page Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-24">
