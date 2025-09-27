@@ -38,6 +38,7 @@ export default function ReportDetailsPage({ params }: { params: { id: string } }
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const router = useRouter();
 
@@ -89,6 +90,36 @@ useEffect(() => {
     } catch (error) {
       console.error("Error deleting report:", error);
       alert("Network error. Please try again.");
+    }
+  };
+
+  const handleDownloadReport = async () => {
+    if (!report) return;
+
+    setIsDownloading(true);
+    try {
+      const response = await fetch(`/api/generate-report?reportId=${report.id}`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `report-${report.id}-summary.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert("Failed to generate report summary");
+      }
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      alert("Network error. Please try again.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -307,6 +338,43 @@ useEffect(() => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Download Report Summary */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                AI Report Summary
+              </h3>
+              
+              <p className="text-gray-600 text-sm mb-4">
+                Generate a comprehensive PDF report with AI-powered analysis using Google Gemini Flash 2.5. 
+                Includes executive summary, impact analysis, and actionable recommendations.
+              </p>
+              
+              <button
+                onClick={handleDownloadReport}
+                disabled={isDownloading}
+                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                {isDownloading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Generate AI Report
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* Report Metadata */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
