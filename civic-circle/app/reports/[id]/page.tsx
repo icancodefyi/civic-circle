@@ -304,32 +304,28 @@ useEffect(() => {
                   </div>
                   
                   <div className="bg-gray-50 rounded-xl p-6 border">
-                    {report.address && (
-                      <div className="mb-4">
-                        <p className="text-gray-700 font-medium mb-2">Address:</p>
-                        <p className="text-gray-600">{report.address}</p>
-                      </div>
-                    )}
-                    
-                    {report.latitude && report.longitude && (
-                      <div className="space-y-3">
-                        <p className="text-gray-700 font-medium mb-2">Coordinates:</p>
-                        <p className="text-gray-600 mb-3">
-                          Latitude: {report.latitude.toFixed(6)}, Longitude: {report.longitude.toFixed(6)}
-                        </p>
-                        <a
-                          href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                          View on Google Maps
-                        </a>
-                      </div>
-                    )}
+                      {report.address && (
+                        <div className="mb-4">
+                          <p className="text-gray-700 font-medium mb-2">Address:</p>
+                          <p className="text-gray-600">{report.address}</p>
+                        </div>
+                      )}
+                      {report.latitude && report.longitude && (
+                        <div className="space-y-3">
+                          <p className="text-gray-700 font-medium mb-2">Live Map:</p>
+                          <iframe
+                            title="Live Location Map"
+                            width="100%"
+                            height="300"
+                            style={{ borderRadius: '12px', border: '1px solid #e5e7eb' }}
+                            loading="lazy"
+                            allowFullScreen
+                            referrerPolicy="no-referrer-when-downgrade"
+                            src={`https://www.google.com/maps?q=${report.latitude},${report.longitude}&hl=en&z=16&output=embed`}
+                          />
+                          <p className="text-gray-600 mt-2 text-xs">Latitude: {report.latitude.toFixed(6)}, Longitude: {report.longitude.toFixed(6)}</p>
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
