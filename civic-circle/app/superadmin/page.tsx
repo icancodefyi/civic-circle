@@ -36,51 +36,58 @@ const priorityColors = {
   URGENT: "bg-red-50 text-red-700 border-red-200",
 };
 
-export default function AdminPage() {
+export default function SuperAdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [reports, setReports] = useState<Report[]>([]);
+  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
     inProgress: 0,
     resolved: 0,
+    rejected: 0,
   });
 
-  // Redirect to login if not authenticated
+  // Redirect if not superadmin
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
+    } else if (status === "authenticated" && session?.user?.role !== "superadmin") {
+      router.push("/admin");
     }
-  }, [status, router]);
+  }, [status, session, router]);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.name) {
-      fetchUserReports();
+    if (status === "authenticated" && session?.user?.role === "superadmin") {
+      fetchAllReports();
     }
   }, [status, session]);
 
-  const fetchUserReports = async () => {
+  useEffect(() => {
+    applyFilters();
+  }, [reports, filterStatus, searchTerm]);
+
+  const fetchAllReports = async () => {
     try {
       setLoading(true);
       const response = await fetch("http://localhost:8080/api/reports");
       
       if (response.ok) {
         const data = await response.json();
-        // Filter reports to show only those created by the logged-in user
-        const userReports = data.filter((report: Report) => 
-          report.createdBy === session?.user?.name
-        );
-        setReports(userReports);
+        setReports(data);
         
         // Calculate stats
         const stats = {
-          total: userReports.length,
-          pending: userReports.filter((r: Report) => r.status === "PENDING").length,
-          inProgress: userReports.filter((r: Report) => r.status === "IN_PROGRESS").length,
-          resolved: userReports.filter((r: Report) => r.status === "RESOLVED").length,
+          total: data.length,
+          pending: data.filter((r: Report) => r.status === "PENDING").length,
+          inProgress: data.filter((r: Report) => r.status === "IN_PROGRESS").length,
+          resolved: data.filter((r: Report) => r.status === "RESOLVED").length,
+          rejected: data.filter((r: Report) => r.status === "REJECTED").length,
         };
         setStats(stats);
       } else {
@@ -93,10 +100,46 @@ export default function AdminPage() {
     }
   };
 
+  const applyFilters = () => {
+    let filtered = [...reports];
+
+    // Filter by status
+    if (filterStatus !== "ALL") {
+      filtered = filtered.filter(r => r.status === filterStatus);
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(r =>
+        r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.createdBy?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredReports(filtered);
+  };
+
   const handleStatusUpdate = async (reportId: number, newStatus: string) => {
-    // Regular users cannot update status, show info message
-    alert("Only administrators can update report status. Please wait for the authority to review your report.");
-    return;
+    try {
+      const response = await fetch(`http://localhost:8080/api/reports/${reportId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setReports(prev =>
+          prev.map(r => r.id === reportId ? { ...r, status: newStatus } : r)
+        );
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Network error. Please try again.");
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -124,8 +167,8 @@ export default function AdminPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-600 font-medium">Loading your dashboard...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-gray-600 font-medium">Loading SuperAdmin panel...</p>
           </div>
         </div>
       </div>
@@ -145,7 +188,7 @@ export default function AdminPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
             <p className="text-gray-600 mb-4">{error}</p>
             <button
-              onClick={fetchUserReports}
+              onClick={fetchAllReports}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
             >
               Try Again
@@ -157,52 +200,58 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Auth Header */}
       <AuthHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* SuperAdmin Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Reports Dashboard</h1>
-              <p className="text-gray-600 mt-1">Track and manage your submitted reports</p>
-              <p className="text-sm text-blue-600 mt-2 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Logged in as: {session?.user?.name}
-              </p>
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl shadow-xl p-8 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-white/20 p-3 rounded-xl">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-white">SuperAdmin Control Panel</h1>
+                    <p className="text-purple-100 mt-1">Full system access and report management</p>
+                  </div>
+                </div>
+                <p className="text-sm text-purple-100 flex items-center gap-2 mt-3">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Logged in as SuperAdmin: {session?.user?.email}
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-xl border border-white/20">
+                <p className="text-white/80 text-sm">Role</p>
+                <p className="text-white font-bold text-xl uppercase">{session?.user?.role}</p>
+              </div>
             </div>
-            <Link
-              href="/reports/new"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Report
-            </Link>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Reports</p>
                   <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Pending</p>
@@ -216,7 +265,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">In Progress</p>
@@ -230,7 +279,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Resolved</p>
@@ -243,17 +292,62 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Rejected</p>
+                  <p className="text-3xl font-bold text-red-600 mt-1">{stats.rejected}</p>
+                </div>
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Reports</label>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by title, description, or reporter..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="ALL">All Statuses</option>
+                  {statusOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Reports List */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Your Reports</h2>
-            <p className="text-gray-600 mt-1">Manage and track your submitted reports</p>
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
+            <h2 className="text-xl font-semibold text-gray-900">All Community Reports</h2>
+            <p className="text-gray-600 mt-1">
+              Showing {filteredReports.length} of {reports.length} reports
+            </p>
           </div>
 
-          {reports.length === 0 ? (
+          {filteredReports.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,27 +355,18 @@ export default function AdminPage() {
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No Reports Found</h3>
-              <p className="text-gray-600 mb-6">You haven't submitted any reports yet.</p>
-              <Link
-                href="/reports/new"
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create Your First Report
-              </Link>
+              <p className="text-gray-600">Try adjusting your filters or search criteria.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {reports.map((report) => (
-                <div key={report.id} className="p-6 hover:bg-gray-50 transition-colors">
+              {filteredReports.map((report) => (
+                <div key={report.id} className="p-6 hover:bg-purple-50/50 transition-colors">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <Link 
                           href={`/reports/${report.id}`}
-                          className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+                          className="text-xl font-semibold text-gray-900 hover:text-purple-600 transition-colors"
                         >
                           {report.title}
                         </Link>
@@ -290,7 +375,7 @@ export default function AdminPage() {
                         </span>
                         {report.priority && (
                           <span className={`px-3 py-1.5 rounded-full text-sm font-medium border ${getPriorityColor(report.priority)}`}>
-                            {report.priority} Priority
+                            {report.priority}
                           </span>
                         )}
                       </div>
@@ -298,6 +383,12 @@ export default function AdminPage() {
                       <p className="text-gray-600 mb-4 line-clamp-2">{report.description}</p>
                       
                       <div className="flex items-center gap-6 text-sm text-gray-500">
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          {report.createdBy || "Anonymous"}
+                        </div>
                         <div className="flex items-center gap-1.5">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -310,33 +401,33 @@ export default function AdminPage() {
                           </svg>
                           {formatDate(report.createdAt)}
                         </div>
-                        {report.address && (
-                          <div className="flex items-center gap-1.5">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            {report.address}
-                          </div>
-                        )}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3 ml-6">
-                      {/* Status Display (Read-only for regular users) */}
+                      {/* Status Update Dropdown - FULL CONTROL */}
                       <div className="flex items-center gap-2">
                         <label htmlFor={`status-${report.id}`} className="text-sm font-medium text-gray-700">
-                          Status:
+                          Change Status:
                         </label>
-                        <div className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${getStatusColor(report.status)}`}>
-                          {report.status.replace('_', ' ')}
-                        </div>
+                        <select
+                          id={`status-${report.id}`}
+                          value={report.status}
+                          onChange={(e) => handleStatusUpdate(report.id, e.target.value)}
+                          className="px-3 py-1.5 border-2 border-purple-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm font-medium"
+                        >
+                          {statusOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/reports/${report.id}`}
-                          className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                          className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm"
                         >
                           View Details
                         </Link>

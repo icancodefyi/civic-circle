@@ -1,0 +1,12 @@
+export { default } from "next-auth/middleware";
+
+export const config = {
+  matcher: [
+    "/reports/new",
+    "/admin/:path*",
+    "/superadmin/:path*",
+  ],
+  pages: {
+    signIn: "/login",
+  },
+};

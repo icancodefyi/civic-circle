@@ -2,7 +2,10 @@ import NextAuth, { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import mysql from "mysql2/promise";
 
-// Extend the default Session type to include `id`
+// Superadmin email
+const SUPERADMIN_EMAIL = "impic.tech@gmail.com";
+
+// Extend the default Session type to include `id` and `role`
 declare module "next-auth" {
   interface Session {
     user: {
@@ -10,6 +13,7 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      role?: "user" | "superadmin";
     };
   }
 }
@@ -30,6 +34,9 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  pages: {
+    signIn: "/login",
+  },
   callbacks: {
     async signIn({ user }) {
       // Check if user exists
@@ -38,21 +45,33 @@ export const authOptions: AuthOptions = {
         [user.email]
       );
 
+      // Determine role based on email
+      const role = user.email === SUPERADMIN_EMAIL ? "superadmin" : "user";
+
       // Insert new user if not exists
       if ((rows as any[]).length === 0) {
         await pool.query(
-          "INSERT INTO users (name, email, image) VALUES (?, ?, ?)",
-          [user.name, user.email, user.image]
+          "INSERT INTO users (name, email, image, role) VALUES (?, ?, ?, ?)",
+          [user.name, user.email, user.image, role]
+        );
+      } else {
+        // Update role if user exists but role changed (e.g., promoting to superadmin)
+        await pool.query(
+          "UPDATE users SET role = ? WHERE email = ?",
+          [role, user.email]
         );
       }
       return true;
     },
     async session({ session }) {
       const [rows] = await pool.query(
-        "SELECT id FROM users WHERE email = ?",
+        "SELECT id, role FROM users WHERE email = ?",
         [session.user.email]
       );
-      if ((rows as any[]).length > 0) session.user.id = (rows as any[])[0].id;
+      if ((rows as any[]).length > 0) {
+        session.user.id = (rows as any[])[0].id;
+        session.user.role = (rows as any[])[0].role;
+      }
       return session;
     },
   },

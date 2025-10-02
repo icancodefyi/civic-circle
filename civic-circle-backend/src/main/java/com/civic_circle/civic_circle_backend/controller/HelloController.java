@@ -18,8 +18,8 @@ public class HelloController {
     private ReportService reportService;
 
     @GetMapping("/hello")
-    public String hello() {
-        return "Hello from Civic Circle Backend 🚀";
+    public java.util.Map<String, String> hello() {
+        return java.util.Collections.singletonMap("message", "Hello from Civic Circle Backend 🚀");
     }
     
     // Backward compatibility endpoint

@@ -7,10 +7,12 @@ import { GetInvolvedSection } from "@/components/get-involved-section"
 import { ProfessionalReportSection } from "@/components/professional-report-section"
 import { ContactSection } from "@/components/contact-section"
 import { Footer } from "@/components/footer"
+import { AuthHeader } from "@/components/auth-header"
 
 export default function HomePage() {
   return (
     <main className="min-h-screen">
+      <AuthHeader />
       <HeroSection />
       <HowItWorksSection />
       <FeaturesSection />

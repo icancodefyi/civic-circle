@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # MySQL Database Container
+  mysql:
+    image: mysql:8.0
+    container_name: civic-circle-mysql
+    restart: unless-stopped
+    environment:
+      # Use environment variables for credentials
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-civic_circle}
+      MYSQL_USER: ${DB_USER:-civic_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-defaultUserPass123}
+    # Remove port mapping to prevent external access (only internal container access)
+    # ports:
+    #   - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - civic-circle-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-defaultRootPass123}"]
+      timeout: 20s
+      retries: 10
+      interval: 30s
+      start_period: 30s
+
+  # Spring Boot Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: civic-circle-backend
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      # Database connection using environment variables
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME:-civic_circle}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-civic_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-defaultUserPass123}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${DDL_AUTO:-update}
+      SPRING_JPA_SHOW_SQL: ${SHOW_SQL:-false}
+      SPRING_PROFILES_ACTIVE: docker
+      # Additional configurations
+      JAVA_OPTS: ${JAVA_OPTS:--Xmx512m -Xms256m}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - civic-circle-network
+
+# Named volumes for data persistence
+volumes:
+  mysql_data:
+    driver: local
+
+# Custom network
+networks:
+  civic-circle-network:
+    driver: bridge

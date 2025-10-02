@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { AuthHeader } from "@/components/auth-header";
 
 type FormData = {
   title: string;
@@ -42,6 +44,9 @@ const PRIORITIES = [
 ];
 
 export default function NewReportPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
@@ -59,7 +64,22 @@ export default function NewReportPage() {
   const [locationLoading, setLocationLoading] = useState(false);
   const [categories, setCategories] = useState<string[]>(CATEGORIES);
 
-  const router = useRouter();
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  // Auto-populate user name from session
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.name) {
+      setFormData(prev => ({ 
+        ...prev, 
+        createdBy: session.user.name || "" 
+      }));
+    }
+  }, [status, session]);
 
   useEffect(() => {
     // Fetch existing categories from the backend
@@ -247,8 +267,26 @@ export default function NewReportPage() {
     }
   };
 
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading...</h3>
+            <p className="text-gray-600">Verifying your session</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Auth Header */}
+      <AuthHeader />
+
       {/* Modern Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -550,11 +588,20 @@ export default function NewReportPage() {
                 name="createdBy"
                 value={formData.createdBy}
                 onChange={handleInputChange}
-                placeholder="Enter your name"
+                placeholder={session?.user?.name || "Enter your name"}
+                disabled={!!session?.user?.name}
                 className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                  errors.createdBy ? "border-red-300 bg-red-50" : "border-gray-300 hover:border-blue-400"
+                  errors.createdBy ? "border-red-300 bg-red-50" : session?.user?.name ? "border-gray-300 bg-gray-100 cursor-not-allowed" : "border-gray-300 hover:border-blue-400"
                 }`}
               />
+              {session?.user?.name && (
+                <p className="text-xs text-blue-600 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Auto-filled from your profile
+                </p>
+              )}
               {errors.createdBy && (
                 <p className="text-sm text-red-600 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
