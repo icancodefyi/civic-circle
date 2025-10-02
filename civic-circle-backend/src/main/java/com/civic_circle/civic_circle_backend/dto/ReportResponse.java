@@ -18,6 +18,7 @@ public class ReportResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
+    private String email;
     private ReportPriority priority;
     private String image;
     
@@ -117,6 +118,14 @@ public class ReportResponse {
     
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+    
+    public String getEmail() {
+        return email;
+    }
+    
+    public void setEmail(String email) {
+        this.email = email;
     }
     
     public ReportPriority getPriority() {

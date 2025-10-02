@@ -2,6 +2,7 @@ package com.civic_circle.civic_circle_backend.dto;
 
 import com.civic_circle.civic_circle_backend.entity.ReportPriority;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -23,6 +24,11 @@ public class CreateReportRequest {
     private Double longitude;
     private String address;
     private String createdBy;
+    
+    @Email(message = "Invalid email format")
+    @Size(max = 255, message = "Email cannot exceed 255 characters")
+    private String email;
+    
     private ReportPriority priority = ReportPriority.MEDIUM;
     private String image;
     
@@ -99,6 +105,14 @@ public class CreateReportRequest {
     
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+    
+    public String getEmail() {
+        return email;
+    }
+    
+    public void setEmail(String email) {
+        this.email = email;
     }
     
     public ReportPriority getPriority() {

@@ -19,6 +19,7 @@ type Report = {
   createdAt: string;
   updatedAt?: string;
   createdBy?: string;
+  email?: string;
 };
 
 // Extend the session type to include role
@@ -169,7 +170,7 @@ export default function SuperAdminPage() {
               oldStatus: oldStatus,
               newStatus: newStatus,
               reporterName: currentReport.createdBy || 'User',
-              reporterEmail: currentReport.createdBy ? `${currentReport.createdBy.toLowerCase().replace(/\s+/g, '.')}@example.com` : 'user@example.com',
+              reporterEmail: currentReport.email || 'user@example.com',
             }),
           });
 

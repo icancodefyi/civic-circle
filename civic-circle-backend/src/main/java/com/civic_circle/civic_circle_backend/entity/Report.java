@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -62,6 +63,11 @@ public class Report {
     
     @Column(name = "created_by")
     private String createdBy;
+    
+    @Email(message = "Invalid email format")
+    @Size(max = 255, message = "Email cannot exceed 255 characters")
+    @Column(name = "email", length = 255)
+    private String email;
     
     @Column(name = "priority")
     @Enumerated(EnumType.STRING)
@@ -183,5 +189,13 @@ public class Report {
     
     public void setPriority(ReportPriority priority) {
         this.priority = priority;
+    }
+    
+    public String getEmail() {
+        return email;
+    }
+    
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

@@ -39,9 +39,10 @@ public class ReportService {
         report.setLongitude(request.getLongitude());
         report.setAddress(request.getAddress());
         report.setCreatedBy(request.getCreatedBy());
+        report.setEmail(request.getEmail());
         report.setPriority(request.getPriority());
-    report.setStatus(ReportStatus.PENDING);
-    report.setImage(request.getImage());
+        report.setStatus(ReportStatus.PENDING);
+        report.setImage(request.getImage());
         
         Report savedReport = reportRepository.save(report);
         return mapToResponse(savedReport);
@@ -173,8 +174,9 @@ public class ReportService {
         response.setCreatedAt(report.getCreatedAt());
         response.setUpdatedAt(report.getUpdatedAt());
         response.setCreatedBy(report.getCreatedBy());
-    response.setPriority(report.getPriority());
-    response.setImage(report.getImage());
+        response.setEmail(report.getEmail());
+        response.setPriority(report.getPriority());
+        response.setImage(report.getImage());
         return response;
     }
 }

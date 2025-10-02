@@ -13,6 +13,7 @@ type FormData = {
   priority: string;
   address: string;
   createdBy: string;
+  email: string;
   latitude: number | null;
   longitude: number | null;
   image?: string | null;
@@ -54,6 +55,7 @@ export default function NewReportPage() {
     priority: "MEDIUM",
     address: "",
     createdBy: "",
+    email: "",
     latitude: null,
     longitude: null,
     image: null,
@@ -75,7 +77,8 @@ export default function NewReportPage() {
     if (status === "authenticated" && session?.user?.name) {
       setFormData(prev => ({ 
         ...prev, 
-        createdBy: session.user?.name || "" 
+        createdBy: session.user?.name || "",
+        email: session.user?.email || ""
       }));
     }
   }, [status, session]);
@@ -101,6 +104,12 @@ export default function NewReportPage() {
 
     if (!formData.createdBy.trim()) {
       newErrors.createdBy = "Reporter name is required";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
     }
 
     setErrors(newErrors);
@@ -342,6 +351,24 @@ export default function NewReportPage() {
                     }`}
                   />
                   {errors.createdBy && <p className="text-xs text-rose-600 mt-1">{errors.createdBy}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">
+                    Email Address <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email address"
+                    disabled={!!session?.user?.email}
+                    className={`w-full px-4 py-3 bg-slate-50 border-2 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                      errors.email ? "border-rose-300 bg-rose-50" : session?.user?.email ? "border-transparent bg-slate-100 cursor-not-allowed" : "border-transparent hover:border-slate-200"
+                    }`}
+                  />
+                  {errors.email && <p className="text-xs text-rose-600 mt-1">{errors.email}</p>}
                 </div>
 
                 <div>
