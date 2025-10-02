@@ -31,7 +31,7 @@ export function AuthHeader() {
                   >
                     Submit Report
                   </Link>
-                  {session?.user?.role === "superadmin" ? (
+                  {(session?.user as any)?.role === "superadmin" ? (
                     <Link 
                       href="/superadmin" 
                       className="text-purple-600 hover:text-purple-700 font-medium transition-colors flex items-center gap-1"
@@ -113,7 +113,7 @@ export function AuthHeader() {
                     <p className="text-xs text-gray-500 truncate">
                       {session.user.email}
                     </p>
-                    {session.user.role === "superadmin" && (
+                    {(session.user as any)?.role === "superadmin" && (
                       <div className="mt-2">
                         <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,7 +144,7 @@ export function AuthHeader() {
                           </svg>
                           Create Report
                         </Link>
-                        {session.user.role === "superadmin" ? (
+                        {(session.user as any)?.role === "superadmin" ? (
                           <Link
                             href="/superadmin"
                             className="flex items-center gap-3 px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 hover:text-purple-800 transition-colors font-medium"

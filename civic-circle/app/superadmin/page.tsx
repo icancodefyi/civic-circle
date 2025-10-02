@@ -21,6 +21,17 @@ type Report = {
   createdBy?: string;
 };
 
+// Extend the session type to include role
+interface ExtendedSession {
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string;
+  };
+  expires: string;
+}
+
 const statusOptions = [
   { value: "PENDING", label: "Pending", color: "bg-amber-100 text-amber-800 border-amber-200" },
   { value: "IN_PROGRESS", label: "In Progress", color: "bg-blue-100 text-blue-800 border-blue-200" },
@@ -37,7 +48,7 @@ const priorityColors = {
 };
 
 export default function SuperAdminPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession() as { data: ExtendedSession | null; status: string };
   const router = useRouter();
   const [reports, setReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
@@ -45,6 +56,7 @@ export default function SuperAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -57,13 +69,13 @@ export default function SuperAdminPage() {
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
-    } else if (status === "authenticated" && session?.user?.role !== "superadmin") {
+    } else if (status === "authenticated" && (session?.user as any)?.role !== "superadmin") {
       router.push("/admin");
     }
   }, [status, session, router]);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.role === "superadmin") {
+    if (status === "authenticated" && (session?.user as any)?.role === "superadmin") {
       fetchAllReports();
     }
   }, [status, session]);
@@ -122,6 +134,16 @@ export default function SuperAdminPage() {
 
   const handleStatusUpdate = async (reportId: number, newStatus: string) => {
     try {
+      // Get the current report details before updating
+      const currentReport = reports.find(r => r.id === reportId);
+      if (!currentReport) {
+        alert("Report not found");
+        return;
+      }
+
+      const oldStatus = currentReport.status;
+
+      // Update status in backend
       const response = await fetch(`http://localhost:8080/api/reports/${reportId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -133,6 +155,39 @@ export default function SuperAdminPage() {
         setReports(prev =>
           prev.map(r => r.id === reportId ? { ...r, status: newStatus } : r)
         );
+
+        // Send email notification
+        try {
+          const emailResponse = await fetch('/api/send-status-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              reportId: currentReport.id,
+              reportTitle: currentReport.title,
+              oldStatus: oldStatus,
+              newStatus: newStatus,
+              reporterName: currentReport.createdBy || 'User',
+              reporterEmail: currentReport.createdBy ? `${currentReport.createdBy.toLowerCase().replace(/\s+/g, '.')}@example.com` : 'user@example.com',
+            }),
+          });
+
+          const emailData = await emailResponse.json();
+          
+          if (emailData.success) {
+            if (emailData.warning) {
+              console.warn('Email notification skipped:', emailData.message);
+            } else {
+              console.log('Email notification sent successfully');
+            }
+          }
+        } catch (emailError) {
+          console.error('Error sending email notification:', emailError);
+          // Don't show error to user - email is secondary functionality
+        }
+
+        alert(`✅ Status updated successfully from ${oldStatus} to ${newStatus}`);
       } else {
         alert("Failed to update status");
       }
@@ -160,6 +215,58 @@ export default function SuperAdminPage() {
   const getPriorityColor = (priority?: string) => {
     if (!priority) return "bg-slate-50 text-slate-600 border-slate-200";
     return priorityColors[priority as keyof typeof priorityColors] || "bg-slate-50 text-slate-600 border-slate-200";
+  };
+
+  const handleDownloadSummary = async () => {
+    try {
+      setIsGeneratingSummary(true);
+      
+      const response = await fetch('/api/generate-report-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate summary');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.pdf) {
+        // Convert base64 to blob and download
+        const base64Data = data.pdf.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `CivicCircle-Reports-Summary-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        alert(`✅ Successfully generated summary for ${data.reportCount} reports!`);
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('Error downloading summary:', error);
+      alert('❌ Failed to generate report summary. Please try again.');
+    } finally {
+      setIsGeneratingSummary(false);
+    }
   };
 
   if (loading || status === "loading") {
@@ -230,7 +337,7 @@ export default function SuperAdminPage() {
               </div>
               <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-xl border border-white/20">
                 <p className="text-white/80 text-sm">Role</p>
-                <p className="text-white font-bold text-xl uppercase">{session?.user?.role}</p>
+                <p className="text-white font-bold text-xl uppercase">{(session?.user as any)?.role || 'superadmin'}</p>
               </div>
             </div>
           </div>
@@ -333,6 +440,35 @@ export default function SuperAdminPage() {
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
+              </div>
+            </div>
+            
+            {/* Download Summary Button */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1">Generate Reports Summary</h3>
+                  <p className="text-sm text-gray-600">Download a comprehensive AI-generated PDF summary of all reports</p>
+                </div>
+                <button
+                  onClick={handleDownloadSummary}
+                  disabled={isGeneratingSummary || reports.length === 0}
+                  className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-semibold transition-all shadow-lg shadow-purple-600/30 hover:shadow-xl hover:shadow-purple-600/40"
+                >
+                  {isGeneratingSummary ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-current border-t-transparent"></div>
+                      Generating Summary...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Download Summary PDF
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
