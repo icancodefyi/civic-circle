@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { use } from "react";
 
 type Report = {
   id: number;
@@ -35,7 +36,8 @@ const priorityColors = {
   URGENT: "bg-red-50 text-red-700 border-red-200",
 };
 
-export default function ReportDetailsPage({ params }: { params: { id: string } }) {
+export default function ReportDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,15 +46,15 @@ export default function ReportDetailsPage({ params }: { params: { id: string } }
   const router = useRouter();
 
 useEffect(() => {
-    if (!params?.id) return;
+    if (!resolvedParams?.id) return;
     fetchReport();
-}, [params.id]);
+}, [resolvedParams.id]);
 
 
   const fetchReport = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/reports/${params.id}`);
+      const response = await fetch(`http://localhost:8080/api/reports/${resolvedParams.id}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -239,7 +241,7 @@ useEffect(() => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Report Details</h1>
-              <p className="text-gray-600">Report #{params.id}</p>
+              <p className="text-gray-600">Report #{resolvedParams.id}</p>
             </div>
           </div>
         </div>
